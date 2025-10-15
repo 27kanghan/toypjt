@@ -20,4 +20,10 @@ public class UserController {
         return ResponseEntity.ok("good");
     }
 
+    @PostMapping("/login")
+    public ResponseEntity<String> logIn(@RequestBody UserSignInRequestDto requestDto) {
+        String result = userService.singIn(requestDto);
+        return ResponseEntity.ok(result);
+    }
+
 }
