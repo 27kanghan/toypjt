@@ -37,7 +37,7 @@ public class BoardService {
         if(board.isPresent()){
             boardRepository.deleteById(boardId);
         }else{
-            throw new IllegalArgumentException("잘못 된 요청임다");
+            throw new IllegalArgumentException("잘못 된 요청입니다");
         }
 
     }
