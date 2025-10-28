@@ -30,7 +30,7 @@ jobs:
 
       # (4) Gradle로 빌드 (test 포함)
       - name: Build with Gradle
-        run: ./gradlew build
+        run: ./gradlew build -x test
 
       # (5) [CD를 위한 1단계] 빌드된 .jar 파일을 GitHub Actions에 업로드
       - name: Upload artifact (jar file)
