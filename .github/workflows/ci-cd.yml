@@ -1,10 +1,10 @@
 # 1. 워크플로우 이름
 name: CI/CD Pipeline for Spring Boot
 
-# 2. 실행 시점
+# 2. 실행 시점 (main 브랜치)
 on:
   push:
-    branches: [ "main" ] #
+    branches: [ "main" ]
 
 # 3. 실행할 작업들
 jobs:
@@ -28,7 +28,7 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
 
-      # Gradle로 빌드 (test는 건너뛰기)
+      # (4.1) Gradle로 빌드 (test는 건너뛰기)
       - name: Build with Gradle
         run: ./gradlew build -x test
 
@@ -54,11 +54,11 @@ jobs:
         with:
           name: toypjt-jar
 
-      # 로그찍기
+      # (2) (디버깅용) 다운로드한 파일 목록 확인
       - name: List files in directory
         run: ls -la
 
-      # 'scp' 로봇을 사용해 .jar 파일을 AWS 서버로 "복사"
+      # (3) 'scp' 로봇을 사용해 .jar 파일을 AWS 서버로 "복사"
       - name: Copy jar file to EC2
         uses: appleboy/scp-action@master
         with:
@@ -66,10 +66,10 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           port: 22
-          source: "toyPJT-0.0.1-SNAPSHOT.jar" # 로봇 서버에 있는 이 파일을
-          target: "/home/ubuntu"               # AWS 서버의 /home/ubuntu 폴더로 복사
+          source: "toyPJT-0.0.1-SNAPSHOT.jar" # 👈 대소문자 수정 완료
+          target: "/home/ubuntu"
 
-      # 'ssh' 로봇을 사용해 AWS 서버에서 "명령어 실행"
+      # (4) 'ssh' 로봇을 사용해 AWS 서버에서 "명령어 실행"
       - name: Run deploy script on EC2
         uses: appleboy/ssh-action@master
         with:
@@ -81,10 +81,12 @@ jobs:
           # (b) "복사가 끝난 후" AWS 서버에서 실행할 명령어들
           script: |
             # 1. 'scp' 로봇이 복사해 둔 파일을 app.jar로 이름 변경
-            mv /home/ubuntu/toyPJT-0.0.1-SNAPSHOT.jar /home/ubuntu/app.jar
+            mv /home/ubuntu/toyPJT-0.0.1-SNAPSHOT.jar /home/ubuntu/app.jar # 👈 대소문자 수정 완료
             
-            # 2. 기존에 실행 중이던 'app.jar' 프로그램이 있으면 종료
-            pkill -f 'app.jar' || true
+            # 2. [!!! 여기가 수정된 부분 !!!]
+            # 'app.jar'가 아니라 'java -jar ... app.jar'를 찾아서 종료
+            pkill -f 'java -jar /home/ubuntu/app.jar' || true
             
             # 3. 새 app.jar 파일을 백그라운드로 실행 (로그 파일 남기기)
             nohup java -jar /home/ubuntu/app.jar > /home/ubuntu/app.log 2>&1 &
+
