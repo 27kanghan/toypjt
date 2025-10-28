@@ -64,6 +64,8 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}   # .pem 키 내용
           port: 22                             # SSH 접속 포트 (기본값)
 
+          source: "toypjt-0.0.1-SNAPSHOT.jar"
+          target: "/home/ubuntu"
           # (b) AWS 서버에서 실행할 명령어들
           script: |
             # 1. (중요) 다운로드된 .jar 파일의 이름을 app.jar로 변경
