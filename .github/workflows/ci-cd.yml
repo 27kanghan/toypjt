@@ -1,7 +1,7 @@
 # 1. 워크플로우 이름
 name: CI/CD Pipeline for Spring Boot
 
-# 2. 실행 시점
+# 2. 실행 시점 (main 브랜치에 push될 때)
 on:
   push:
     branches: [ "main" ]
@@ -28,7 +28,7 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
 
-      # (4.1) Gradle로 빌드 (test는 건너뛰기)
+      # (4) Gradle로 빌드 (test는 건너뛰기)
       - name: Build with Gradle
         run: ./gradlew build -x test
 
@@ -37,8 +37,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: toypjt-jar
-          path: build/libs/*.jar
-          retention-days: 1
+          path: build/libs/*.jar # build/libs/ 폴더의 모든 .jar 파일을 보관
+          retention-days: 1 # 1일만 보관
 
   #######################
   # 2. CD (배포) 작업
@@ -66,7 +66,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           port: 22
-          source: "toyPJT-0.0.1-SNAPSHOT.jar" # 👈 대소문자 수정 완료
+          source: "toyPJT-0.0.1-SNAPSHOT.jar" # 👈 대소문자 확인
           target: "/home/ubuntu"
 
       # (4) 'ssh' 로봇을 사용해 AWS 서버에서 "명령어 실행"
@@ -81,31 +81,15 @@ jobs:
           # (b) "복사가 끝난 후" AWS 서버에서 실행할 명령어들
           script: |
             # 1. 'scp' 로봇이 복사해 둔 파일을 app.jar로 이름 변경
-            mv /home/ubuntu/toyPJT-0.0.1-SNAPSHOT.jar /home/ubuntu/app.jar
-            
-            # 2. [!!! 여기가 수정된 부분 (더 안전하게) !!!]
-            # 'app.jar'를 실행 중인 'java' 프로세스의 PID를 찾아서 종료
+            mv /home/ubuntu/toyPJT-0.0.1-SNAPSHOT.jar /home/ubuntu/app.jar # 👈 대소문자 확인
+
+            # 2. 'app.jar'를 실행 중인 'java' 프로세스의 PID를 찾아서 종료 (안전한 방식)
             PID=$(ps -ef | grep 'java -jar /home/ubuntu/app.jar' | grep -v 'grep' | awk '{print $2}')
             if [ -n "$PID" ]; then
               echo "Killing process: $PID"
               kill -9 $PID
             fi
-            
+
             # 3. 새 app.jar 파일을 백그라운드로 실행 (로그 파일 남기기)
             nohup java -jar /home/ubuntu/app.jar > /home/ubuntu/app.log 2>&1 &
-  ```eof
-  
-  ### 📌 뭐가 바뀌었나요?
-  
-  `ssh-action`의 `script:` 부분에서, "스크립트 자살"을 일으키던 `pkill` 명령어를 **더 안전하고 정확한** PID 검색/제거 스크립트로 바꿨습니다.
-  
-  ```bash
-  # 2. 기존 pkill (위험)
-  # pkill -f 'java -jar /home/ubuntu/app.jar' || true
-  
-  # 2. 새 방식 (안전)
-  PID=$(ps -ef | grep 'java -jar /home/ubuntu/app.jar' | grep -v 'grep' | awk '{print $2}')
-  if [ -n "$PID" ]; then
-echo "Killing process: $PID"
-  kill -9 $PID
-  fi
+
