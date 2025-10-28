@@ -66,7 +66,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           port: 22
-          source: "toypjt-0.0.1-SNAPSHOT.jar" # 로봇 서버에 있는 이 파일을
+          source: "toyPJT-0.0.1-SNAPSHOT.jar" # 로봇 서버에 있는 이 파일을
           target: "/home/ubuntu"               # AWS 서버의 /home/ubuntu 폴더로 복사
 
       # 'ssh' 로봇을 사용해 AWS 서버에서 "명령어 실행"
@@ -81,7 +81,7 @@ jobs:
           # (b) "복사가 끝난 후" AWS 서버에서 실행할 명령어들
           script: |
             # 1. 'scp' 로봇이 복사해 둔 파일을 app.jar로 이름 변경
-            mv /home/ubuntu/toypjt-0.0.1-SNAPSHOT.jar /home/ubuntu/app.jar
+            mv /home/ubuntu/toyPJT-0.0.1-SNAPSHOT.jar /home/ubuntu/app.jar
             
             # 2. 기존에 실행 중이던 'app.jar' 프로그램이 있으면 종료
             pkill -f 'app.jar' || true
